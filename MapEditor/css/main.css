@@ -23,6 +23,7 @@ body {
 	background-color: var(--background-color);
 }
 
+
 #main-container {
 	position: absolute;
 	margin-inline: auto;
