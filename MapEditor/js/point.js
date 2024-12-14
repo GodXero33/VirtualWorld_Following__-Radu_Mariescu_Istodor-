@@ -9,7 +9,7 @@ class Point {
 	}
 
 	static translate (point, angle, radius) {
-		
+		return new Point(point.x + Math.cos(angle) * radius, point.y + Math.sin(angle) * radius);
 	}
 
 	static draw (point, ctx, color, size) {

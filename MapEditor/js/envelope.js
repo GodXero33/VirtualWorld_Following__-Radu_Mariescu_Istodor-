@@ -5,6 +5,7 @@ class Envelope {
 	}
 
 	static generatePoly (envelope, width) {
+		const poly = [];
 		const { a, b } = envelope.skeleton;
 		const radius = width / 2;
 		const angle = Math.atan2(a.y - b.y, a.x - b.x);
@@ -14,5 +15,13 @@ class Envelope {
 		const a_ccw = Point.translate(a, angle_ccw, radius);
 		const b_cw = Point.translate(b, angle_cw, radius);
 		const b_ccw = Point.translate(b, angle_ccw, radius);
+
+		poly.push(a_cw, a_ccw, b_cw, b_ccw);
+	}
+
+	static draw (envelope, ctx, strokeColor, fillColor, lineWidth) {
+		ctx.strokeStyle = strokeColor;
+		ctx.fillStyle = fillColor;
+		ctx.lineWidth = lineWidth;
 	}
 }
