@@ -50,8 +50,8 @@
 		canvas = document.getElementById('canvas');
 		ctx = canvas.getContext('2d');
 		viewPort = new ViewPort(canvas);
-		graph = GRAPH.createGraph();
-		editor = GRAPH.createEditor(graph, viewPort).addEventListeners(canvas);
+		graph = new Graph();
+		editor = new GraphEditor(graph, viewPort).addEventListeners(canvas);
 
 		console.log(viewPort, graph, editor);
 
