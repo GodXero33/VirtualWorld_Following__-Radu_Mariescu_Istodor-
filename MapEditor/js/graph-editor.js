@@ -35,7 +35,6 @@ class GraphEditor {
 				if (this.futurePoint) {
 					const joinSegement = new Segment(this.hoverPoint, this.selectedPoint);
 					this.graph.addSegment(joinSegement);
-					this.graph.envelopes.push(new Envelope(joinSegement, 100));
 					this.futurePoint = null;
 					this.futureSegment = null;
 					this.selectedPoint = this.hoverPoint;
@@ -49,7 +48,6 @@ class GraphEditor {
 			if (this.futurePoint) {
 				this.graph.addPoint(this.futurePoint);
 				this.graph.addSegment(this.futureSegment);
-				this.graph.envelopes.push(new Envelope(this.futureSegment, 100));
 				this.selectedPoint = this.futurePoint;
 				this.futurePoint = null;
 				this.futureSegment = null;
@@ -106,6 +104,8 @@ class GraphEditor {
 		if (this.grabStart) {
 			this.hoverPoint.x = (event.x - this.grabStart.x) * this.viewport.zoom;
 			this.hoverPoint.y = (event.y - this.grabStart.y) * this.viewport.zoom;
+			
+			this.graph.segments.filter(segment => segment.a == this.hoverPoint || segment.b == this.hoverPoint).forEach(segment => Segment.update(segment));
 			return;
 		}
 

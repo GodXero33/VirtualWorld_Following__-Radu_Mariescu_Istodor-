@@ -1,21 +1,19 @@
 class Envelope {
 	constructor (skeleton, width) {
-		this.skeleton = skeleton;
-		this.poly = Envelope.generatePoly(this, width);
+		this.poly = Envelope.generatePoly(this, skeleton, width);
 	}
 
-	static generatePoly (envelope, width) {
+	static generatePoly (envelope, skeleton, width) {
 		const poly = [];
-		const { a, b } = envelope.skeleton;
+		const { a, b } = skeleton;
 		const radius = width / 2;
 		const angle = Math.atan2(a.y - b.y, a.x - b.x);
-		const angle_cw = angle + Math.PI / 2;
-		const angle_ccw = angle - Math.PI / 2;
+		const quality = GRAPH_SETTINGS.ENVELOPE_QUALITY;
+		const delta_angle = Math.PI / quality;
 
-		poly.push(Point.translate(a, angle_cw, radius));
-		poly.push(Point.translate(a, angle_ccw, radius));
-		poly.push(Point.translate(b, angle_ccw, radius));
-		poly.push(Point.translate(b, angle_cw, radius));
+		for (let g = 0; g <= Math.PI; g += delta_angle) poly.push(Point.translate(a, angle + g - Math.PI / 2, radius));
+		for (let g = Math.PI; g >= 0; g -= delta_angle) poly.push(Point.translate(b, angle - g - Math.PI / 2, radius));
+
 		return poly;
 	}
 

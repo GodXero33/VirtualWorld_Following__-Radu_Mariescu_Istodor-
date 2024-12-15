@@ -2,6 +2,7 @@ class Segment {
 	constructor (a, b) {
 		this.a = a;
 		this.b = b;
+		this.envelope = new Envelope(this, GRAPH_SETTINGS.ENVELOPE_WIDTH);
 	}
 
 	static includes (segment, point) {
@@ -16,6 +17,10 @@ class Segment {
 		return Segment.includes(a, b.a) && Segment.includes(a, b.b);
 	}
 
+	static update (segment) {
+		segment.envelope = new Envelope(segment, GRAPH_SETTINGS.ENVELOPE_WIDTH);
+	}
+
 	static draw (segment, ctx, color, width) {
 		ctx.strokeStyle = color;
 		ctx.lineWidth = width;
@@ -24,5 +29,9 @@ class Segment {
 		ctx.moveTo(segment.a.x, segment.a.y);
 		ctx.lineTo(segment.b.x, segment.b.y);
 		ctx.stroke();
+	}
+
+	static drawEnvelope (segment, ctx, zoom) {
+		Envelope.draw(segment.envelope, ctx, zoom);
 	}
 }

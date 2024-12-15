@@ -2,7 +2,6 @@ class Graph {
 	constructor () {
 		this.points = new Array(0);
 		this.segments = new Array(0);
-		this.envelopes = new Array(0);
 	}
 
 	containsPoint (point) {
@@ -80,7 +79,7 @@ class Graph {
 	}
 
 	draw (ctx, zoom) {
-		this.envelopes.forEach(envelope => Envelope.draw(envelope, ctx, zoom));
+		this.segments.forEach(segment => Segment.drawEnvelope(segment, ctx, zoom));
 		this.segments.forEach(segment => Segment.draw(segment, ctx, GRAPH_SETTINGS.SEGEMENT_COLOR, GRAPH_SETTINGS.SEGEMENT_WIDTH * zoom));
 		this.points.forEach(point => Point.draw(point, ctx, GRAPH_SETTINGS.POINT_DRAW_COLOR, GRAPH_SETTINGS.POINT_DRAW_SIZE * zoom));
 	}
