@@ -11,6 +11,8 @@ class GraphEditor {
 		this.grabStart = null;
 		this.futurePoint = null;
 		this.futureSegment = null;
+		this.activeX = true;
+		this.activeY = true;
 	}
 
 	addEventListeners (canvas) {
@@ -20,6 +22,8 @@ class GraphEditor {
 		canvas.addEventListener('wheel', this.#mousewheel.bind(this));
 		canvas.addEventListener('mouseout', this.#mouseout.bind(this));
 		canvas.addEventListener('contextmenu', event => event.preventDefault());
+		window.addEventListener('keydown', this.#keydown.bind(this));
+		window.addEventListener('keyup', this.#keyup.bind(this));
 
 		return this;
 	}
@@ -87,6 +91,8 @@ class GraphEditor {
 	#mouseup () {
 		this.panStart = null;
 		this.grabStart = null;
+		this.activeX = true;
+		this.activeY = true;
 	}
 
 	#mousemove (event) {
@@ -96,25 +102,24 @@ class GraphEditor {
 		const y = (event.y - rect.y - canvas.height / 2) * this.viewport.zoom - this.viewport.translate.y;
 
 		if (this.panStart) {
-			this.viewport.translate.x = (event.x - this.panStart.x) * this.viewport.zoom;
-			this.viewport.translate.y = (event.y - this.panStart.y) * this.viewport.zoom;
+			this.viewport.translate.x = this.activeX ? (event.x - this.panStart.x) * this.viewport.zoom : this.viewport.translate.x;
+			this.viewport.translate.y = this.activeY ? (event.y - this.panStart.y) * this.viewport.zoom : this.viewport.translate.y;
 			return;
 		}
 
 		if (this.grabStart) {
-			this.hoverPoint.x = (event.x - this.grabStart.x) * this.viewport.zoom;
-			this.hoverPoint.y = (event.y - this.grabStart.y) * this.viewport.zoom;
+			this.hoverPoint.x = this.activeX ? (event.x - this.grabStart.x) * this.viewport.zoom : this.hoverPoint.x;
+			this.hoverPoint.y = this.activeY ? (event.y - this.grabStart.y) * this.viewport.zoom : this.hoverPoint.y;
 			
 			this.graph.segments.filter(segment => segment.a == this.hoverPoint || segment.b == this.hoverPoint).forEach(segment => Segment.update(segment));
 			return;
 		}
 
-		this.hoverPoint = this.graph.getNearestPoint(x, y);
+		this.hoverPoint = this.graph.getNearestPoint(x, y, this.viewport.zoom);
 
 		if (this.selectedPoint) {
-			this.futurePoint = new Point(x, y);
+			this.futurePoint = new Point(this.activeX ? x : this.selectedPoint.x, this.activeY ? y : this.selectedPoint.y);
 			this.futureSegment = new Segment(this.futurePoint, this.selectedPoint);
-			// this.hoverPoint = null;
 		}
 	}
 
@@ -131,13 +136,85 @@ class GraphEditor {
 		this.grabStart = null;
 	}
 
+	#keydown (event) {
+		// 
+	}
+
+	#keyup (event) {
+		if (event.code == 'KeyX') {
+			this.activeX = true;
+			this.activeY = false;
+		} else if (event.code == 'KeyY') {
+			this.activeX = false;
+			this.activeY = true;
+		}
+	}
+
 	resize (w, h) {
 		this.width = w;
 		this.height = h;
 	}
 
+	drawGrid (ctx) {
+		const step = GRAPH_SETTINGS.GRAPH_GRID_STEP_SIZE;
+		let indSizeX = GRAPH_SETTINGS.GRAPH_GRID_INDICATERS_SIZE * this.viewport.zoom;
+		let indSizeY = GRAPH_SETTINGS.GRAPH_GRID_INDICATERS_SIZE * this.viewport.zoom;
+		let x1 = 0;
+		let y1 = -this.height * this.viewport.zoom / 2 - this.viewport.translate.y;
+		let x2 = 0;
+		let y2 = this.height * this.viewport.zoom / 2 - this.viewport.translate.y;
+		let x3 = -this.width * this.viewport.zoom / 2 - this.viewport.translate.x;
+		let y3 = 0;
+		let x4 = this.width * this.viewport.zoom / 2 - this.viewport.translate.x;
+		let y4 = 0;
+
+		if (y1 >= 0) y3 = y4 = y1;
+		if (y2 <= 0) y3 = y4 = y2;
+		if (x3 >= 0) x1 = x2 = x3;
+		if (x4 <= 0) x1 = x2 = x4;
+
+		if (y2 - indSizeY <= 0) indSizeY = -indSizeY;
+		if (x3 + indSizeX >= 0) indSizeX = -indSizeX;
+
+		ctx.strokeStyle = GRAPH_SETTINGS.GRPAH_GRID_INDICATERS_COLOR;
+		ctx.lineWidth = 1 * this.viewport.zoom;
+		ctx.beginPath();
+
+		for (let x = x1 - x1 % step; x < x4; x += step) {
+			ctx.moveTo(x, y3);
+			ctx.lineTo(x, y3 + indSizeY);
+		}
+
+		for (let x = x2 - x2 % step; x > x3; x -= step) {
+			ctx.moveTo(x, y3);
+			ctx.lineTo(x, y3 + indSizeY);
+		}
+
+		for (let y = y3 - y3 % step; y < y2; y += step) {
+			ctx.moveTo(x1, y);
+			ctx.lineTo(x1 - indSizeX, y);
+		}
+
+		for (let y = y4 - y4 % step; y > y1; y -= step) {
+			ctx.moveTo(x1, y);
+			ctx.lineTo(x1 - indSizeX, y);
+		}
+
+		ctx.stroke();
+
+		ctx.strokeStyle = GRAPH_SETTINGS.GRPAH_GRID_AXIS_COLOR;
+		ctx.lineWidth = 2 * this.viewport.zoom;
+		ctx.beginPath();
+		ctx.moveTo(x1, y1);
+		ctx.lineTo(x2, y2);
+		ctx.moveTo(x3, y3);
+		ctx.lineTo(x4, y4);
+		ctx.stroke();
+	}
+
 	draw (ctx) {
 		const pointDrawSize = GRAPH_SETTINGS.POINT_DRAW_SIZE * this.viewport.zoom;
+		this.drawGrid(ctx);
 		this.graph.draw(ctx, this.viewport.zoom);
 
 		if (this.futureSegment) Segment.draw(this.futureSegment, ctx, GRAPH_SETTINGS.SEGMENT_FUTURE_COLOR, GRAPH_SETTINGS.SEGEMENT_WIDTH * this.viewport.zoom);

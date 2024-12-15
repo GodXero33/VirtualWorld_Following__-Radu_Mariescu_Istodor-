@@ -6,7 +6,7 @@ class ViewPort {
 		this.minZoom = 1;
 		this.maxZoom = 10;
 		this.zoom = this.minZoom;
-		this.translate = { x: 0, y: 200 };
+		this.translate = { x: 0, y: 0 };
 	}
 
 	update () {

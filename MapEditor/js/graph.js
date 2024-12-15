@@ -67,8 +67,8 @@ class Graph {
 		return this;
 	}
 
-	getNearestPoint (x, y) {
-		return this.points.find(point => (x - point.x) * (x - point.x) + (y - point.y) * (y - point.y) < GRAPH_SETTINGS.MINIMUM_POINT_SNAP_DISTANCE ** 2);
+	getNearestPoint (x, y, zoom) {
+		return this.points.find(point => (x - point.x) * (x - point.x) + (y - point.y) * (y - point.y) < (GRAPH_SETTINGS.MINIMUM_POINT_SNAP_DISTANCE * zoom) ** 2);
 	}
 
 	dispose () {
